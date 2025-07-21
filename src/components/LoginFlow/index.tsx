@@ -90,6 +90,30 @@ export default function LoginFlow() {
         const data = await response.json();
 
         if (!response.ok) {
+          // Handle specific secure word errors
+          if (data.error === 'Secure Word Expired') {
+            // Reset to secure word step to get new secure word
+            setState((prev) => ({
+              ...prev,
+              step: "username",
+              secureWord: "",
+              secureWordExpiry: 0,
+              isLoading: false,
+              error: "Secure word has expired. Please start the login process again.",
+            }));
+            return;
+          }
+          if (data.error === 'Secure Word Required' || data.error === 'Invalid Secure Word') {
+            setState((prev) => ({
+              ...prev,
+              step: "username",
+              secureWord: "",
+              secureWordExpiry: 0,
+              isLoading: false,
+              error: data.details || data.error || "Invalid secure word. Please start again.",
+            }));
+            return;
+          }
           throw new Error(data.error || "Login failed");
         }
 

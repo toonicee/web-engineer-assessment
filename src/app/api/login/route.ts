@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { hashPassword } from '@/lib/crypto';
 import { createSession } from '@/lib/auth';
+import { secureWordStore, SECURE_WORD_EXPIRY_MS } from '@/lib/secureWordStore';
 
 // interface Authentication Configuration
 interface UserConfig {
@@ -78,6 +79,42 @@ export async function POST(request: NextRequest) {
 
     // Multi-Factor Authentication Check
     if (user.requiresMfa) {
+      // Validate secure word expiry for MFA users
+      if (!secureWord) {
+        return NextResponse.json({ 
+          error: 'Secure Word Required', 
+          details: 'MFA requires a valid secure word' 
+        }, { status: 400 });
+      }
+
+      const secureWordData = secureWordStore.get(username);
+      if (!secureWordData) {
+        return NextResponse.json({ 
+          error: 'Invalid Secure Word', 
+          details: 'No secure word found for this user' 
+        }, { status: 401 });
+      }
+
+      // Check if secure word has expired (60 seconds)
+      const now = Date.now();
+      if (now - secureWordData.issuedAt > SECURE_WORD_EXPIRY_MS) {
+        return NextResponse.json({ 
+          error: 'Secure Word Expired', 
+          details: 'Secure word has expired. Please request a new one.' 
+        }, { status: 401 });
+      }
+
+      // Validate secure word match
+      if (secureWord !== secureWordData.word) {
+        return NextResponse.json({ 
+          error: 'Invalid Secure Word', 
+          details: 'Provided secure word does not match' 
+        }, { status: 401 });
+      }
+
+      // Remove used secure word to prevent reuse
+      secureWordStore.delete(username);
+
       return NextResponse.json({ 
         success: true, 
         requiresMfa: true,

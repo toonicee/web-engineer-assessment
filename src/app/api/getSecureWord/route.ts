@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateSecureWord } from '../../../lib/crypto';
 import { SecureWordRequest, SecureWordResponse } from '../../../types/auth';
-
-// In-memory store 
-const secureWordStore = new Map<string, { word: string; issuedAt: number; requestCount: number; lastRequest: number }>();
+import { secureWordStore, RATE_LIMIT_MS } from '../../../lib/secureWordStore';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +15,7 @@ export async function POST(request: NextRequest) {
     const existing = secureWordStore.get(username);
 
     // Rate limiting: max 1 request per 10 seconds
-    if (existing && (now - existing.lastRequest) < 10000) {
+    if (existing && (now - existing.lastRequest) < RATE_LIMIT_MS) {
       return NextResponse.json({ error: 'Too many requests. Please wait.' }, { status: 429 });
     }
 
