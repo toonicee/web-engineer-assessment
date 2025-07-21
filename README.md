@@ -45,7 +45,6 @@ This is a [Next.js](https://nextjs.org) project implementing solutions for 4 dev
 
 **Implementation**:
 
-- **18 Passing Unit Tests**: Complete logic coverage
 - **Authentication Testing**: Login flow, MFA, token management
 - **API Testing**: Mock API responses and error handling
 - **Input Validation**: Username, password, MFA code validation
@@ -178,63 +177,3 @@ yarn start
 ```bash
 yarn lint
 ```
-
-## API Endpoints
-
-The application includes these API endpoints:
-
-- `POST /api/getSecureWord` - Generate secure word for authentication
-- `POST /api/login` - Authenticate user with credentials
-- `POST /api/verifyMfa` - Verify MFA code
-- `GET /api/transaction-history` - Fetch user transactions
-
-## Technologies Used
-
-- **Framework**: Next.js 15 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Authentication**: JWT tokens with bcrypt password hashing
-- **Testing**: Jest with React Testing Library
-- **UI Components**: Custom components with shadcn/ui patterns
-- **State Management**: React hooks and local storage
-
-## Development Guidelines
-
-1. **Code Style**: Follow TypeScript and ESLint configurations
-2. **Testing**: Write unit tests for new features
-3. **Security**: Never commit secrets, use environment variables
-4. **Components**: Follow existing patterns for consistency
-5. **API**: Implement proper error handling and validation
-
-## 📁 Challenge Implementation Details
-
-### Challenge 1: Navbar Implementation
-
-- **Location**: `src/app/layout.tsx` and navigation components
-- **Features**: Responsive design, clean UI, mobile-optimized
-- **Technology**: Next.js App Router, Tailwind CSS
-
-### Challenge 2: Login Flow Implementation
-
-- **Location**: `src/components/LoginFlow/` directory
-- **Files**:
-  - `index.tsx` - Main login flow orchestrator
-  - `UsernameStep.tsx` - Username input component
-  - `SecureWordStep.tsx` - Secure word display with timer
-  - `PasswordStep.tsx` - Password input component
-  - `MfaStep.tsx` - MFA code verification component
-- **API Routes**: `src/app/api/getSecureWord/`, `src/app/api/login/`, `src/app/api/verifyMfa/`
-
-### Challenge 3: Data Table Implementation
-
-- **Location**: `src/app/dashboard/page.tsx`
-- **API Route**: `src/app/api/transaction-history/route.ts`
-- **Features**: Real-time data fetching, loading states, error handling, responsive design
-- **Data**: Mock transaction data with realistic fields
-
-### Challenge 4: Unit Tests Implementation
-
-- **Location**: Multiple test files across components
-- **Primary Test File**: `src/components/LoginFlow/LoginFlow.simple.test.tsx`
-- **Coverage**: 18 comprehensive unit tests covering all core functionality
-- **Testing Strategy**: Logic-focused tests due to React 19 compatibility considerations
