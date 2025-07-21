@@ -24,7 +24,7 @@ describe('Utility Functions', () => {
   describe('cn (classNames)', () => {
     it('should combine class names', () => {
       expect(cn('test', 'class1', 'class2')).toBe('test class1 class2');
-      expect(cn('', 'class1', null, 'class2')).toBe('class1 class2');
+      expect(cn('', 'class1', undefined, 'class2')).toBe('class1 class2');
     });
   });
 });

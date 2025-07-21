@@ -1,7 +1,18 @@
-import { type ClassValue, clsx } from 'clsx';
-
-export function cn(...inputs: any[]): string {
-    return inputs.filter(Boolean).join(' ');
+export function cn(...inputs: (string | Record<string, boolean> | undefined)[]): string {
+    return inputs
+        .filter(Boolean)
+        .map(input => {
+            if (typeof input === 'string') return input;
+            if (typeof input === 'object') {
+                return Object.entries(input)
+                    .filter(([, value]) => value)
+                    .map(([key]) => key)
+                    .join(' ');
+            }
+            return '';
+        })
+        .filter(Boolean)
+        .join(' ');
 }
 
 export function formatTime(seconds: number): string {

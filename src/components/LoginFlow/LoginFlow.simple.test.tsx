@@ -3,8 +3,8 @@
  * Tests individual components and logic instead of full integration
  */
 
-import { renderHook } from '@testing-library/react';
 import { useRouter } from 'next/navigation';
+import { hashPassword } from '@/lib/crypto';
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
@@ -100,7 +100,7 @@ describe('LoginFlow Logic Tests', () => {
 
   describe('Password Submission Logic', () => {
     it('should call login API with correct parameters', async () => {
-      const mockHashPassword = require('@/lib/crypto').hashPassword;
+      const mockHashPassword = hashPassword as jest.MockedFunction<typeof hashPassword>;
       const mockResponse = {
         ok: true,
         json: () => Promise.resolve({

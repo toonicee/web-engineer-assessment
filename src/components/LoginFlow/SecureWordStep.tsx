@@ -58,7 +58,7 @@ export default function SecureWordStep({
         {timeLeft > 0 ? (
           <>
             <p className="text-sm text-gray-500">
-              Please remember this secure word. You'll need it for the next
+              Please remember this secure word. You&apos;ll need it for the next
               step.
             </p>
             {error && <div className="text-red-500 text-sm">{error}</div>}

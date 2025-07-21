@@ -13,7 +13,7 @@ export function generateSecureWord(username: string): string {
   return hash.substring(0, 8).toUpperCase();
 }
 
-export function generateMfaCode(secret: string): string {
+export function generateMfaCode(): string {
   // Mock implementation - in real app use TOTP library
   return Math.random().toString().substr(2, 6);
 }

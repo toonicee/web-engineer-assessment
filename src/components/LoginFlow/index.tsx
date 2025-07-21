@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { LoginState } from "@/types/auth";
 import { hashPassword } from "@/lib/crypto";
@@ -167,7 +167,7 @@ export default function LoginFlow() {
         );
       }
     },
-    [state.username, state.attempts, setError, setLoading, router]
+    [state.username, setError, setLoading, router]
   );
 
   // Render current step

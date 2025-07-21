@@ -14,7 +14,6 @@ interface MfaStepProps {
 }
 
 export default function MfaStep({
-  username,
   onSubmit,
   isLoading,
   error,

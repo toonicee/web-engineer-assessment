@@ -1,25 +1,8 @@
 /**
  * @jest-environment node
  */
-import { NextRequest } from 'next/server';
-import { GET, STATIC_TRANSACTIONS, Transaction } from './route';
-
-// Mock NextRequest for Node.js environment
-class MockNextRequest {
-  url: string;
-  method: string;
-  headers: Map<string, string>;
-
-  constructor(url: string = 'http://localhost:3000/api/transaction-history') {
-    this.url = url;
-    this.method = 'GET';
-    this.headers = new Map();
-  }
-
-  json() {
-    return Promise.resolve({});
-  }
-}
+import { GET } from './route';
+import { STATIC_TRANSACTIONS, Transaction } from './data';
 
 describe('Transaction History API', () => {
   beforeAll(() => {
@@ -32,10 +15,8 @@ describe('Transaction History API', () => {
   });
 
   it('should return transactions successfully', async () => {
-    const mockRequest = new MockNextRequest() as unknown as NextRequest;
-    
     // Fast-forward timers to skip the delay
-    const responsePromise = GET(mockRequest);
+    const responsePromise = GET();
     jest.advanceTimersByTime(500);
     
     const response = await responsePromise;
@@ -48,9 +29,7 @@ describe('Transaction History API', () => {
   });
 
   it('should have correct transaction structure', async () => {
-    const mockRequest = new MockNextRequest() as unknown as NextRequest;
-    
-    const responsePromise = GET(mockRequest);
+    const responsePromise = GET();
     jest.advanceTimersByTime(500);
     
     const response = await responsePromise;
@@ -67,9 +46,7 @@ describe('Transaction History API', () => {
   });
 
   it('should return transactions with correct properties', async () => {
-    const mockRequest = new MockNextRequest() as unknown as NextRequest;
-    
-    const responsePromise = GET(mockRequest);
+    const responsePromise = GET();
     jest.advanceTimersByTime(500);
     
     const response = await responsePromise;
@@ -93,9 +70,7 @@ describe('Transaction History API', () => {
   });
 
   it('should match static transactions', async () => {
-    const mockRequest = new MockNextRequest() as unknown as NextRequest;
-    
-    const responsePromise = GET(mockRequest);
+    const responsePromise = GET();
     jest.advanceTimersByTime(500);
     
     const response = await responsePromise;

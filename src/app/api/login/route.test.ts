@@ -9,9 +9,9 @@ class MockNextRequest {
   url: string;
   method: string;
   headers: Map<string, string>;
-  private body: any;
+  private body: unknown;
 
-  constructor(body: any = {}, url: string = 'http://localhost:3000/api/login') {
+  constructor(body: unknown = {}, url: string = 'http://localhost:3000/api/login') {
     this.url = url;
     this.method = 'POST';
     this.headers = new Map();

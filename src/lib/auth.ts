@@ -1,8 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { SessionData } from '../types/auth';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 export function generateToken(username: string): string {
     return jwt.sign(
@@ -14,7 +12,7 @@ export function generateToken(username: string): string {
 
 export function verifyToken(token: string): string | null {
     try {
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        const decoded = jwt.verify(token, JWT_SECRET) as { username: string };
         return decoded.username;
     } catch {
         return null;
