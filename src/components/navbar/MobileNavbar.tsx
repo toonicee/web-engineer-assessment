@@ -13,10 +13,11 @@ interface MobileNavbarProps {
   menuItems: MenuItem[];
   isMenuOpen: boolean;
   isSearchVisible: boolean;
-  searchQuery: string;
+  // searchQuery: string;
   onToggleMenu: () => void;
   onToggleSearch: () => void;
   onCloseMenu: () => void;
+  onLoginClick: () => void;
 }
 
 const MobileNavbar: React.FC<MobileNavbarProps> = ({

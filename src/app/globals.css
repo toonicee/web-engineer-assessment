@@ -24,3 +24,145 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+
+/* Root Variables for Smooth Transitions */
+:root {
+  --transition-speed-fast: 0.2s;
+  --transition-speed-medium: 0.3s;
+  --transition-speed-slow: 0.5s;
+
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.0, 0.0, 0.2, 1);
+}
+
+/* Global Animations */
+@layer utilities {
+  /* Fade In Animation */
+  .animate-fade-in {
+    animation: fadeIn var(--transition-speed-slow) var(--ease-in-out) forwards;
+    opacity: 0;
+  }
+
+  /* Slide Up Animation */
+  .animate-slide-up {
+    animation: 
+      slideUp var(--transition-speed-medium) var(--ease-out) forwards,
+      fadeIn var(--transition-speed-medium) var(--ease-out) forwards;
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  /* Scale Hover Effect */
+  .animate-scale-hover {
+    transition: 
+      transform var(--transition-speed-fast) var(--ease-in-out),
+      box-shadow var(--transition-speed-fast) var(--ease-in-out);
+  }
+
+  .animate-scale-hover:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Pulse Animation */
+  .animate-pulse-slow {
+    animation: pulse 2s infinite var(--ease-in-out);
+  }
+
+  /* Button Hover Ripple */
+  .animate-ripple {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .animate-ripple::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    opacity: 0;
+    transition: 
+      width var(--transition-speed-medium) var(--ease-out),
+      height var(--transition-speed-medium) var(--ease-out),
+      opacity var(--transition-speed-medium) var(--ease-out);
+  }
+
+  .animate-ripple:active::after {
+    width: 200%;
+    height: 200%;
+    opacity: 1;
+  }
+}
+
+
+/* Keyframe Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Page Transition Animations */
+.page-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: 
+    opacity var(--transition-speed-medium) var(--ease-out),
+    transform var(--transition-speed-medium) var(--ease-out);
+}
+
+.page-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: 
+    opacity var(--transition-speed-medium) var(--ease-out),
+    transform var(--transition-speed-medium) var(--ease-out);
+}
+
+/* Responsive Animations */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

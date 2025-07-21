@@ -10,9 +10,10 @@ interface MenuItem {
 
 interface DesktopNavbarProps {
   menuItems: MenuItem[];
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
-  onSearch: (e: React.FormEvent | React.KeyboardEvent) => void;
+  onLoginClick: () => void;
+  // searchQuery: string;
+  // onSearchChange: (value: string) => void;
+  // onSearch: (e: React.FormEvent | React.KeyboardEvent) => void;
 }
 
 const DesktopNavbar: React.FC<DesktopNavbarProps> = ({ menuItems }) => {
