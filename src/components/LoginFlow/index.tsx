@@ -31,6 +31,11 @@ export default function LoginFlow() {
     setState((prev) => ({ ...prev, isLoading, error: "" }));
   }, []);
 
+  const handleLockoutExpired = useCallback(() => {
+    // Reset to initial state when lockout expires
+    setState(initialState);
+  }, []);
+
   // Step 1: Handle username submission and get secure word
   const handleUsernameSubmit = useCallback(
     async (username: string) => {
@@ -231,7 +236,9 @@ export default function LoginFlow() {
         return (
           <MfaStep
             username={state.username}
+            secureWord={state.secureWord}
             onSubmit={handleMfaSubmit}
+            onLockoutExpired={handleLockoutExpired}
             isLoading={state.isLoading}
             error={state.error}
             attempts={state.attempts}

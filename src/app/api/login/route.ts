@@ -112,8 +112,8 @@ export async function POST(request: NextRequest) {
         }, { status: 401 });
       }
 
-      // Remove used secure word to prevent reuse
-      secureWordStore.delete(username);
+      // Keep secure word for MFA validation - will be deleted after MFA success
+      // secureWordStore.delete(username); // Don't delete yet, needed for MFA
 
       return NextResponse.json({ 
         success: true, 

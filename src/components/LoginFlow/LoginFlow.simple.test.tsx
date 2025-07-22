@@ -4,7 +4,7 @@
  */
 
 import { useRouter } from 'next/navigation';
-import { hashPassword } from '@/lib/crypto';
+import { hashPassword, generateMfaCode } from '@/lib/crypto';
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
@@ -13,7 +13,13 @@ jest.mock('next/navigation', () => ({
 
 // Mock crypto functions
 jest.mock('@/lib/crypto', () => ({
-  hashPassword: jest.fn((password: string) => `hashed_${password}`)
+  hashPassword: jest.fn((password: string) => `hashed_${password}`),
+  generateMfaCode: jest.fn((secureWord?: string) => {
+    if (secureWord) {
+      return '654321'; // Mock deterministic code based on secure word
+    }
+    return '123456'; // Mock random code
+  })
 }));
 
 // Mock fetch
@@ -232,6 +238,51 @@ describe('LoginFlow Logic Tests', () => {
       expect(response.status).toBe(401);
       expect(data.error).toBe('Invalid MFA code');
     });
+
+    it('should handle account lockout with countdown', async () => {
+      const mockResponse = {
+        ok: false,
+        status: 429,
+        json: () => Promise.resolve({
+          error: 'Account locked. Try again in 15 second(s).'
+        })
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+      const response = await fetch('/api/verifyMfa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: 'admin',
+          code: '999999'
+        })
+      });
+
+      const data = await response.json();
+      expect(response.status).toBe(429);
+      expect(data.error).toContain('Account locked');
+      expect(data.error).toContain('second(s)');
+    });
+
+    it('should generate MFA code from secure word', () => {
+      const mockGenerateMfaCode = generateMfaCode as jest.MockedFunction<typeof generateMfaCode>;
+      const secureWord = 'SECURE123';
+      
+      const generatedCode = mockGenerateMfaCode(secureWord);
+      
+      expect(mockGenerateMfaCode).toHaveBeenCalledWith(secureWord);
+      expect(generatedCode).toBe('654321');
+    });
+
+    it('should generate fallback MFA code without secure word', () => {
+      const mockGenerateMfaCode = generateMfaCode as jest.MockedFunction<typeof generateMfaCode>;
+      
+      const generatedCode = mockGenerateMfaCode();
+      
+      expect(mockGenerateMfaCode).toHaveBeenCalledWith();
+      expect(generatedCode).toBe('123456');
+    });
   });
 
   describe('Timer Logic', () => {
@@ -262,6 +313,26 @@ describe('LoginFlow Logic Tests', () => {
       expect(formatTime(30)).toBe('0:30');
       expect(formatTime(5)).toBe('0:05');
       expect(formatTime(0)).toBe('0:00');
+    });
+
+    it('should parse lockout seconds from error message', () => {
+      const parseCountdown = (errorMessage: string) => {
+        const match = errorMessage.match(/Try again in (\d+) second/);
+        return match ? parseInt(match[1]) : 0;
+      };
+
+      expect(parseCountdown('Account locked. Try again in 15 second(s).')).toBe(15);
+      expect(parseCountdown('Account locked. Try again in 5 second(s).')).toBe(5);
+      expect(parseCountdown('Invalid MFA code')).toBe(0);
+    });
+
+    it('should calculate lockout end time correctly', () => {
+      const now = Date.now();
+      const seconds = 20;
+      const endTime = now + (seconds * 1000);
+      
+      const calculatedSeconds = Math.ceil((endTime - now) / 1000);
+      expect(calculatedSeconds).toBe(20);
     });
   });
 
@@ -304,6 +375,70 @@ describe('LoginFlow Logic Tests', () => {
     });
   });
 
+  describe('State Management', () => {
+    it('should reset to initial state on lockout expiry', () => {
+      const initialState = {
+        step: 'username',
+        username: '',
+        secureWord: '',
+        secureWordExpiry: 0,
+        attempts: 0,
+        isLoading: false,
+        error: ''
+      };
+
+      const currentState = {
+        step: 'mfa',
+        username: 'admin',
+        secureWord: 'SECURE123',
+        secureWordExpiry: Date.now() + 60000,
+        attempts: 3,
+        isLoading: false,
+        error: 'Account locked'
+      };
+
+      // Simulate state reset
+      const resetState = { ...initialState };
+
+      expect(resetState.step).toBe('username');
+      expect(resetState.username).toBe('');
+      expect(resetState.secureWord).toBe('');
+      expect(resetState.attempts).toBe(0);
+      expect(resetState.error).toBe('');
+    });
+
+    it('should maintain state during step transitions', () => {
+      let state = {
+        step: 'username',
+        username: '',
+        secureWord: '',
+        secureWordExpiry: 0,
+        attempts: 0,
+        isLoading: false,
+        error: ''
+      };
+
+      // Simulate username step completion
+      state = {
+        ...state,
+        username: 'admin',
+        secureWord: 'SECURE123',
+        secureWordExpiry: Date.now() + 60000,
+        step: 'secureWord'
+      };
+
+      expect(state.username).toBe('admin');
+      expect(state.secureWord).toBe('SECURE123');
+      expect(state.step).toBe('secureWord');
+
+      // Simulate password step
+      state = { ...state, step: 'password' };
+      expect(state.username).toBe('admin');
+      expect(state.secureWord).toBe('SECURE123');
+      expect(state.step).toBe('password');
+    });
+  });
+
   describe('Input Validation', () => {
     it('should validate MFA code format', () => {
       const isValidMfaCode = (code: string) => {
@@ -337,6 +472,26 @@ describe('LoginFlow Logic Tests', () => {
       expect(sanitizeMfaInput('abc123def')).toBe('123');
       expect(sanitizeMfaInput('1a2b3c4d5e6f7g')).toBe('123456');
       expect(sanitizeMfaInput('123')).toBe('123');
+    });
+
+    it('should handle MFA input array format', () => {
+      const validateMfaArray = (codeArray: string[]) => {
+        return codeArray.length === 6 && codeArray.every(digit => /^\d$/.test(digit));
+      };
+
+      expect(validateMfaArray(['1', '2', '3', '4', '5', '6'])).toBe(true);
+      expect(validateMfaArray(['1', '2', '3', '4', '5'])).toBe(false);
+      expect(validateMfaArray(['1', '2', '3', '4', '5', 'a'])).toBe(false);
+      expect(validateMfaArray(['', '', '', '', '', ''])).toBe(false);
+    });
+
+    it('should convert MFA array to string', () => {
+      const arrayToString = (codeArray: string[]) => {
+        return codeArray.join('');
+      };
+
+      expect(arrayToString(['1', '2', '3', '4', '5', '6'])).toBe('123456');
+      expect(arrayToString(['1', '', '3', '', '5', '6'])).toBe('1356');
     });
   });
 

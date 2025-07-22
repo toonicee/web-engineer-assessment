@@ -213,7 +213,7 @@ describe('Login API', () => {
       expect(data.details).toContain('MFA requires');
     });
 
-    it('should remove secure word after successful use', async () => {
+    it('should keep secure word after successful login for MFA validation', async () => {
       const username = 'admin';
       const secureWord = 'test-secure-word';
       const now = Date.now();
@@ -235,10 +235,45 @@ describe('Login API', () => {
       // Verify secure word exists before request
       expect(secureWordStore.has(username)).toBe(true);
 
-      await POST(mockRequest);
+      const response = await POST(mockRequest);
+      const data = await response.json();
 
-      // Verify secure word is removed after successful use
-      expect(secureWordStore.has(username)).toBe(false);
+      // Verify login was successful and requires MFA
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.requiresMfa).toBe(true);
+
+      // Verify secure word is NOT removed (kept for MFA validation)
+      expect(secureWordStore.has(username)).toBe(true);
+    });
+
+    it('should handle non-MFA user login without secure word removal', async () => {
+      const username = 'user'; // user doesn't require MFA
+      const secureWord = 'test-secure-word';
+      const now = Date.now();
+      
+      // Add valid secure word to store
+      secureWordStore.set(username, {
+        word: secureWord,
+        issuedAt: now - 30000,
+        requestCount: 1,
+        lastRequest: now - 30000
+      });
+
+      const mockRequest = new MockNextRequest({
+        username,
+        hashedPassword: hashPassword('userpass'),
+        secureWord
+      }) as unknown as NextRequest;
+
+      const response = await POST(mockRequest);
+      const data = await response.json();
+
+      // For non-MFA users, login should be complete
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.token).toBeDefined();
+      expect(data.requiresMfa).toBeUndefined();
     });
   });
 });

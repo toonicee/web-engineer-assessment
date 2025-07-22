@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateSecureWord } from '../../../lib/crypto';
-import { SecureWordRequest, SecureWordResponse } from '../../../types/auth';
-import { secureWordStore, RATE_LIMIT_MS } from '../../../lib/secureWordStore';
+import { generateSecureWord } from '@/lib/crypto';
+import { SecureWordRequest, SecureWordResponse } from '@/types/auth';
+import { secureWordStore, RATE_LIMIT_MS } from '@/lib/secureWordStore';
 
 export async function POST(request: NextRequest) {
   try {
